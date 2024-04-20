@@ -14,7 +14,7 @@ const server = net.createServer((socket) => {
     const [method, path, httpVersion] = socketData.split("\n")[0].split(" ");
     if (path == "/") {
       socket.write("HTTP/1.1 200 OK\r\n\r\n");
-    } else if (path == "/echo") {
+    } else if (path.startsWith("/echo")) {
       const randomString = path.substring(6);
       let responseBody = "HTTP/1.1 200 OK\r\n";
       responseBody += "Content-type: text/plain\r\n";
