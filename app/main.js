@@ -10,7 +10,13 @@ const server = net.createServer((socket) => {
     server.close();
   });
   socket.on("data", (data) => {
-    socket.write("HTTP/1.1 200 OK\r\n\r\n");
+    const socketData = data.toString();
+    const [method, path, httpVersion] = socketData.split("\n")[0].split(" ");
+    if (path == "/") {
+      socket.write("HTTP/1.1 200 OK\r\n\r\n");
+    } else {
+      socket.write("HTTP/1.1 404 NOT FOUND\r\n\r\n");
+    }
   });
 });
 
