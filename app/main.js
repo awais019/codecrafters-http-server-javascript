@@ -20,7 +20,6 @@ const server = net.createServer((socket) => {
       responseBody += "Content-type: text/plain\r\n";
       responseBody += `Content-length: ${randomString.length}\r\n\r\n`;
       responseBody += `${randomString}\r\n\r\n`;
-      1;
       socket.write(responseBody);
     } else if (path == "/user-agent") {
       const userAgent = socketData.split("\r\n")[2].split(":")[1].trim();
