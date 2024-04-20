@@ -14,6 +14,14 @@ const server = net.createServer((socket) => {
     const [method, path, httpVersion] = socketData.split("\n")[0].split(" ");
     if (path == "/") {
       socket.write("HTTP/1.1 200 OK\r\n\r\n");
+    }
+    if (path.startsWith("/echo")) {
+      const randomString = path.substring(6);
+      let responseBody = "HTTP/1.1 200 OK\r\n\r\n";
+      responseBody += "Content-type: text/plain\r\n";
+      responseBody += `Content-length: ${randomString.length}\r\n\r\n`;
+      responseBody += `${randomString}\n\r\n\r`;
+      socket.write(responseBody);
     } else {
       socket.write("HTTP/1.1 404 NOT FOUND\r\n\r\n");
     }
