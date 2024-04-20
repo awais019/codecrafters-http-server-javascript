@@ -22,7 +22,7 @@ const server = net.createServer((socket) => {
       responseBody += `${randomString}\r\n\r\n`;
       socket.write(responseBody);
     } else if (path == "/user-agent") {
-      const userAgent = socketData.split("\r\n")[2].split(":")[1].trim();
+      const userAgent = socketData.split("\r\n")[3].split(":")[1].trim();
       let responseBody = "HTTP/1.1 200 OK\r\n\r\n";
       responseBody += "Content-Type: text/plain\r\n";
       responseBody += `Content-Length: ${userAgent.length}\r\n\r\n`;
