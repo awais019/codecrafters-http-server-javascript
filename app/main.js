@@ -14,6 +14,14 @@ const server = net.createServer((socket) => {
     const [method, path, httpVersion] = socketData.split("\n")[0].split(" ");
     if (path == "/") {
       socket.write("HTTP/1.1 200 OK\r\n\r\n");
+    } else if (path == "/echo") {
+      const randomString = path.substring(6);
+      let responseBody = "HTTP/1.1 200 OK\r\n";
+      responseBody += "Content-type: text/plain\r\n";
+      responseBody += `Content-length: ${randomString.length}\r\n\r\n`;
+      responseBody += `${randomString}\r\n\r\n`;
+      1;
+      socket.write(responseBody);
     } else if (path == "/user-agent") {
       const userAgent = socketData.split("\r\n")[2].split(":")[1].trim();
       let responseBody = "HTTP/1.1 200 OK\r\n\r\n";
