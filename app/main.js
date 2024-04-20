@@ -19,7 +19,7 @@ const server = net.createServer((socket) => {
       let responseBody = "HTTP/1.1 200 OK\r\n";
       responseBody += "Content-Type: text/plain\r\n";
       responseBody += `Content-Length: ${userAgent.length}\r\n\r\n`;
-      responseBody += `${userAgent}/r/n`;
+      responseBody += `${userAgent}\r\n`;
       socket.write(responseBody);
     } else {
       socket.write("HTTP/1.1 404 NOT FOUND\r\n\r\n");
