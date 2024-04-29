@@ -5,7 +5,7 @@ const LINE_TERMINATOR = "\r\n";
 const END = LINE_TERMINATOR + LINE_TERMINATOR;
 const OK_RESPONSE = "HTTP/1.1 200 OK";
 // Uncomment this to pass the first stage
-const server = net.createServer((socket) => {
+const server = net.createServer({ keepAlive: true }, (socket) => {
   socket.on("close", () => {
     socket.end();
     server.close();
