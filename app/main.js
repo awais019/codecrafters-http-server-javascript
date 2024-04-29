@@ -1,8 +1,9 @@
 const net = require("net");
-
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.log("Logs from your program will appear here!");
-
+const LINE_TERMINATOR = "\r\n";
+const END = LINE_TERMINATOR + LINE_TERMINATOR;
+const OK_RESPONSE = "HTTP/1.1 200 OK";
 // Uncomment this to pass the first stage
 const server = net.createServer((socket) => {
   socket.on("close", () => {
@@ -10,28 +11,43 @@ const server = net.createServer((socket) => {
     server.close();
   });
   socket.on("data", (data) => {
-    const socketData = data.toString();
-    const [method, path, httpVersion] = socketData.split("\n")[0].split(" ");
-    if (path == "/") {
+    const [startLine, ...rest] = String(data).split(LINE_TERMINATOR);
+    const [method, path, protocol] = startLine.split(" ");
+    const headers = rest.reduce((acc, line) => {
+      const [k, v] = line.split(": ", 2);
+      acc[k] = v;
+      return acc;
+    }, {});
+    if (path === "/") {
       socket.write("HTTP/1.1 200 OK\r\n\r\n");
-    } else if (path.startsWith("/echo")) {
-      const randomString = path.substring(6);
-      let responseBody = "HTTP/1.1 200 OK\r\n";
-      responseBody += "Content-type: text/plain\r\n";
-      responseBody += `Content-length: ${randomString.length}\r\n\r\n`;
-      responseBody += `${randomString}\r\n\r\n`;
-      socket.write(responseBody);
-    } else if (path == "/user-agent") {
-      const userAgent = socketData.split("\r\n")[3].split(":")[1].trim();
-      let responseBody = "HTTP/1.1 200 OK\r\n";
-      responseBody += "Content-Type: text/plain\r\n";
-      responseBody += `Content-Length: ${userAgent.length}\r\n`;
-      responseBody += `${userAgent}\r\n`;
-      socket.write(responseBody);
+    } else if (path.includes("/echo/")) {
+      const stringToEcho = path.replace("/echo/", "");
+      let response =
+        `${OK_RESPONSE}${LINE_TERMINATOR}` +
+        `Content-Type: text/plain${LINE_TERMINATOR}` +
+        `Content-Length: ${stringToEcho.length}` +
+        END +
+        stringToEcho;
+      response = buildStringResponse(stringToEcho);
+      console.log(response);
+      socket.write(response);
+    } else if (path.includes("/user-agent")) {
+      const userAgent = headers["User-Agent"];
+      const response = buildStringResponse(userAgent);
+      socket.write(response);
     } else {
       socket.write("HTTP/1.1 404 NOT FOUND\r\n\r\n");
     }
+    socket.end();
   });
 });
-
+const buildStringResponse = (stringResp) => {
+  return (
+    `${OK_RESPONSE}${LINE_TERMINATOR}` +
+    `Content-Type: text/plain${LINE_TERMINATOR}` +
+    `Content-Length: ${stringResp.length}` +
+    END +
+    stringResp
+  );
+};
 server.listen(4221, "localhost");
