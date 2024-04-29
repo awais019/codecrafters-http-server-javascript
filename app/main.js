@@ -1,6 +1,5 @@
 const net = require("net");
 const fs = require("fs");
-const path = require("path");
 
 let DIRECTORY = __dirname;
 process.argv.forEach((val, index) => {
@@ -31,21 +30,14 @@ const server = net.createServer({ keepAlive: true }, (socket) => {
       socket.write("HTTP/1.1 200 OK\r\n\r\n");
     } else if (path.includes("/echo/")) {
       const stringToEcho = path.replace("/echo/", "");
-      let response =
-        `${OK_RESPONSE}${LINE_TERMINATOR}` +
-        `Content-Type: text/plain${LINE_TERMINATOR}` +
-        `Content-Length: ${stringToEcho.length}` +
-        END +
-        stringToEcho;
       response = buildStringResponse(stringToEcho, "text/plain");
-      console.log(response);
       socket.write(response);
     } else if (path.includes("/user-agent")) {
       const userAgent = headers["User-Agent"];
       const response = buildStringResponse(userAgent, "text/plain");
       socket.write(response);
-    } else if (path.includes("/files/")) {
-      const fileName = path.split("/").filter((value) => !!value)[1];
+    } else if (path.includes("/files/") && method == "GET") {
+      const fileName = path.split("/").filter(Boolean)[1];
       const filePath = DIRECTORY + fileName;
       if (fs.existsSync(filePath)) {
         const fileContents = fs.readFileSync(filePath, { encoding: "utf8" });
@@ -56,6 +48,11 @@ const server = net.createServer({ keepAlive: true }, (socket) => {
       } else {
         socket.write("HTTP/1.1 404 NOT FOUND\r\n\r\n");
       }
+    } else if (path.includes("/files/") && method == "POST") {
+      const fileName = path.split("/").filter(Boolean)[1];
+      const filePath = DIRECTORY + fileName;
+      fs.writeFileSync(filePath, rest[rest.length - 1]);
+      socket.write("HTTP/1.1 201 Created\r\n\r\n");
     } else {
       socket.write("HTTP/1.1 404 NOT FOUND\r\n\r\n");
     }
