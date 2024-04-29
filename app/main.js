@@ -25,7 +25,7 @@ const server = net.createServer((socket) => {
       const userAgent = socketData.split("\r\n")[3].split(":")[1].trim();
       let responseBody = "HTTP/1.1 200 OK\r\n";
       responseBody += "Content-Type: text/plain\r\n";
-      responseBody += `Content-Length: ${userAgent.length}\r\n\r\n`;
+      responseBody += `Content-Length: ${userAgent.length}\r\n`;
       responseBody += `${userAgent}\r\n`;
       socket.write(responseBody);
     } else {
