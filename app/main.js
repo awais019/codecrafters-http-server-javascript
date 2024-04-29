@@ -1,4 +1,13 @@
 const net = require("net");
+const fs = require("fs");
+const path = require("path");
+
+let DIRECTORY = __dirname;
+process.argv.forEach((val, index) => {
+  if (val === "--directory" && process.argv[index + 1]) {
+    DIRECTORY = process.argv[index + 1];
+  }
+});
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.log("Logs from your program will appear here!");
 const LINE_TERMINATOR = "\r\n";
@@ -28,23 +37,35 @@ const server = net.createServer({ keepAlive: true }, (socket) => {
         `Content-Length: ${stringToEcho.length}` +
         END +
         stringToEcho;
-      response = buildStringResponse(stringToEcho);
+      response = buildStringResponse(stringToEcho, "text/plain");
       console.log(response);
       socket.write(response);
     } else if (path.includes("/user-agent")) {
       const userAgent = headers["User-Agent"];
-      const response = buildStringResponse(userAgent);
+      const response = buildStringResponse(userAgent, "text/plain");
       socket.write(response);
+    } else if (path.includes("/files/")) {
+      const fileName = path.split("/").filter((value) => !!value)[1];
+      const filePath = DIRECTORY + fileName;
+      if (fs.existsSync(filePath)) {
+        const fileContents = fs.readFileSync(filePath, { encoding: "utf8" });
+
+        socket.write(
+          buildStringResponse(fileContents, "application/octet-stream")
+        );
+      } else {
+        socket.write("HTTP/1.1 404 NOT FOUND\r\n\r\n");
+      }
     } else {
       socket.write("HTTP/1.1 404 NOT FOUND\r\n\r\n");
     }
     socket.end();
   });
 });
-const buildStringResponse = (stringResp) => {
+const buildStringResponse = (stringResp, contentType) => {
   return (
     `${OK_RESPONSE}${LINE_TERMINATOR}` +
-    `Content-Type: text/plain${LINE_TERMINATOR}` +
+    `Content-Type: ${contentType}${LINE_TERMINATOR}` +
     `Content-Length: ${stringResp.length}` +
     END +
     stringResp
